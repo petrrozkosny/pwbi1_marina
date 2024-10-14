@@ -1,0 +1,52 @@
+dim_datumy =
+-- Vytvoří tabulku s daty a časy za posledních 360 dní
+-- Tabulka bude mít cca 31 200 000 řádků, doporučuji před spuštěním uložit veškerou rozdělanou práci
+ADDCOLUMNS(
+    GENERATE(
+        GENERATE(
+            GENERATE(
+                SELECTCOLUMNS(
+                    -- Vytvoří sloupec "datum" s kalendářními daty za posledních 360 dní, končí aktuálním datem
+                    CALENDAR(
+                        TODAY() - 360,
+                        TODAY()
+                    ),
+                    "datum", [Date]
+                ),
+                SELECTCOLUMNS(
+                    -- Generuje sloupec "hodina" pro hodnoty od 0 do 23 (každá hodina dne)
+                    GENERATESERIES(
+                        0,
+                        23,
+                        1
+                    ),
+                    "hodina", [Value]
+                )
+            ),
+            SELECTCOLUMNS(
+                -- Generuje sloupec "minuta" pro hodnoty od 0 do 59 (každá minuta hodiny)
+                GENERATESERIES(
+                    0,
+                    59,
+                    1
+                ),
+                "minuta", [Value]
+            )
+        ),
+        SELECTCOLUMNS(
+            -- Generuje sloupec "vterina" pro hodnoty od 0 do 59 (každá sekunda minuty)
+            GENERATESERIES(
+                0,
+                59,
+                1
+            ),
+            "vterina", [Value]
+        )
+    ),
+    -- Vytváří nový sloupec "datum-cas", který kombinuje "datum", "hodina", "minuta" a "vterina" do přesného data a času
+    "datum-cas", [datum] + TIME(
+        [hodina],
+        [minuta],
+        [vterina]
+    )
+)
